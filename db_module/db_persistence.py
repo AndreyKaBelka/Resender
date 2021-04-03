@@ -2,7 +2,6 @@ import pymysql
 import os
 from dotenv import load_dotenv
 from abc import ABCMeta, abstractmethod
-import uuid
 
 load_dotenv()
 
@@ -62,16 +61,20 @@ class InsertQueryBuilder(QueryBuilder):
                                              str.join(',', ['{!r}'.format(str(arg)) for arg in self.args]))
 
 
-def get_ids(uuid=None, vk_id=None, tg_id=None):
-    if uuid is None and vk_id is None and tg_id is None:
+def get_ids(_uuid=None, vk_id=None, tg_id=None) -> list:
+    if _uuid is None and vk_id is None and tg_id is None:
         raise AttributeError("All arguments can't be None!")
     where_query = WhereQueryBuilder() \
-        .add_query('uuid', uuid) \
+        .add_query('uuid', _uuid) \
         .add_query('vkID', vk_id) \
         .add_query('tgID', tg_id) \
         .build()
     res = select_from_table('resender.connection', where_query)
-    print(res[0])
+    return res
+
+
+def is_exist(_uuid=None, vk_id=None, tg_id=None) -> bool:
+    return True if len(get_ids(_uuid, vk_id, tg_id)) > 0 else False
 
 
 def select_from_table(table_name: str, where_query: str, args_to_select: list = None) -> list:
