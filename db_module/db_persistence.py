@@ -61,6 +61,17 @@ class InsertQueryBuilder(QueryBuilder):
                                              str.join(',', ['{!r}'.format(str(arg)) for arg in self.args]))
 
 
+def insert_new_connection(_uuid=None, vk_id=None, tg_id=None):
+    if _uuid is None and vk_id is None and tg_id is None:
+        raise AttributeError("All arguments can't be None!")
+    insert_query = InsertQueryBuilder() \
+        .add_query('uuid', _uuid) \
+        .add_query('vkID', vk_id) \
+        .add_query('tgID', tg_id) \
+        .build()
+    insert_into_table('resender.connection', insert_query)
+
+
 def get_ids(_uuid=None, vk_id=None, tg_id=None) -> list:
     if _uuid is None and vk_id is None and tg_id is None:
         raise AttributeError("All arguments can't be None!")
