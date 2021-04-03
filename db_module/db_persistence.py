@@ -22,7 +22,7 @@ class QueryBuilder:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def add_query(self, value: str, arg: any):
+    def add_query(self, value: str, arg: any) -> 'QueryBuilder':
         """ Добавить значение переменной и аргумент в query """
 
     @abstractmethod
@@ -59,6 +59,21 @@ class InsertQueryBuilder(QueryBuilder):
     def build(self) -> str:
         return '({!s}) VALUES ({!s})'.format(str.join(',', self.values),
                                              str.join(',', ['{!r}'.format(str(arg)) for arg in self.args]))
+
+
+class UpdateQueryBuilder(QueryBuilder):
+    def __init__(self):
+        self.update_vals = []
+        self.args = []
+
+    def add_query(self, value: str, arg: any) -> QueryBuilder:
+        if arg is not None:
+            self.update_vals.append(value + ' = {!r}')
+            self.args.append(str(arg))
+        return self
+
+    def build(self) -> str:
+        return str.join(" , ", self.update_vals).format(*self.args)
 
 
 def insert_new_connection(_uuid=None, vk_id=None, tg_id=None):
@@ -100,4 +115,16 @@ def select_from_table(table_name: str, where_query: str, args_to_select: list = 
 
 def insert_into_table(table_name: str, query: str):
     cur.execute(f"""INSERT INTO {table_name}{query}""")
+    con.commit()
+
+
+def update_in_table(table_name: str, update_query: str, where_query: str):
+    if where_query is None:
+        raise AttributeError('where_query shouldn`t be None!')
+    query = f"""
+    UPDATE {table_name}
+    SET {update_query}
+    WHERE {where_query}
+    """
+    cur.execute(query)
     con.commit()
