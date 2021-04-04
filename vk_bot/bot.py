@@ -61,6 +61,7 @@ class VkBot:
                 if re.match(key, self.event.message.text):
                     func()
                     return
+            self.text = 'I don`t understand you!'
         elif self.event.from_chat:
             for key, func in self.chat_message_handlers.items():
                 if re.match(key, self.event.message.text):
@@ -116,8 +117,8 @@ class VkBot:
             else:
                 self.text = "Simple message!"
         else:
-            db_persistence.insert_or_update_user_state(self.peer_id, UserState.INITIAL)
             self.text = "Simple message!"
+        db_persistence.insert_or_update_user_state(self.peer_id, UserState.INITIAL)
 
     def get_user_name(self):
         pass
