@@ -36,6 +36,12 @@ class VkBot:
             (r'.', self.message)
         ])
 
+        self.chat_message_handlers = dict([
+            (r'/sub', self.sub),
+            (r'/unsub', self.unsub),
+            (r'.', self.message)
+        ])
+
         self.callback = dict([
             ('new_acc', self.new_acc),
             ('ex_acc', self.ex_acc)
@@ -56,7 +62,10 @@ class VkBot:
                     func()
                     return
         elif self.event.from_chat:
-            pass
+            for key, func in self.chat_message_handlers.items():
+                if re.match(key, self.event.message.text):
+                    func()
+                    return
 
     def new_callback_answer(self):
         self.callback.get(self.payload.get('type'))()
@@ -73,6 +82,12 @@ class VkBot:
     def start(self):
         self.text = vk_dict.START_MESSAGE
         self.keyboard = self.registration_keyboard()
+
+    def sub(self):
+        pass
+
+    def unsub(self):
+        pass
 
     def message(self):
         user_state = db_persistence.get_state(self.peer_id)

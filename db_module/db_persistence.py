@@ -126,6 +126,22 @@ def update_connection(where_args: dict, update_args: dict):
     update_in_table('resender.connection', update_query, where_query)
 
 
+def add_listener(chat_id, user_id):
+    insert_query = InsertQueryBuilder() \
+        .add_query('chat_id', chat_id) \
+        .add_query('user_id', user_id) \
+        .build()
+    insert_into_table('resender.chat_listeners', insert_query)
+
+
+def remove_listener(chat_id, user_id):
+    where_query = WhereQueryBuilder() \
+        .add_query('chat_id', chat_id) \
+        .add_query('user_id', user_id) \
+        .build()
+    delete_from_table('resender.chat_listeners', where_query)
+
+
 def is_exist(_uuid=None, vk_id=None, tg_id=None) -> bool:
     return True if len(get_ids(_uuid, vk_id, tg_id)) > 0 else False
 
@@ -159,6 +175,15 @@ def update_in_table(table_name: str, update_query: str, where_query: str):
     query = f"""
     UPDATE {table_name}
     SET {update_query}
+    WHERE {where_query}
+    """
+    cur.execute(query)
+    con.commit()
+
+
+def delete_from_table(table_name: str, where_query: str):
+    query = f"""
+    DELETE FROM {table_name}
     WHERE {where_query}
     """
     cur.execute(query)
