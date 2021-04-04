@@ -99,6 +99,22 @@ def get_ids(_uuid=None, vk_id=None, tg_id=None) -> list:
     return res
 
 
+def update_connection(where_args: dict, update_args: dict):
+    if where_args.get('uuid') is None and where_args.get('vkID') is None and where_args.get('tgID') is None:
+        raise AttributeError("All arguments can't be None!")
+    update_query = UpdateQueryBuilder() \
+        .add_query('uuid', update_args.get('uuid')) \
+        .add_query('vkID', update_args.get('vkID')) \
+        .add_query('tgID', update_args.get('tgID')) \
+        .build()
+    where_query = WhereQueryBuilder() \
+        .add_query('uuid', where_args.get('uuid')) \
+        .add_query('vkID', where_args.get('vkID')) \
+        .add_query('tgID', where_args.get('tgID')) \
+        .build()
+    update_in_table('resender.connection', update_query, where_query)
+
+
 def is_exist(_uuid=None, vk_id=None, tg_id=None) -> bool:
     return True if len(get_ids(_uuid, vk_id, tg_id)) > 0 else False
 
