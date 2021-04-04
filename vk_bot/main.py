@@ -17,7 +17,8 @@ def main():
     lp = BotsLongPoll(api, int(os.getenv('GROUP_ID')), version=100)
 
     async def write_msg(vk_bot: VkBot):
-        await api.messages.send(peer_id=int(vk_bot.peer_id), message=vk_bot.text, keyboard=vk_bot.keyboard)
+        if vk_bot.text is not None:
+            await api.messages.send(peer_id=int(vk_bot.peer_id), message=vk_bot.text, keyboard=vk_bot.keyboard)
 
     async def edit_last_message(vk_bot: VkBot):
         await api.messages.edit(peer_id=int(vk_bot.peer_id), message=vk_bot.text,

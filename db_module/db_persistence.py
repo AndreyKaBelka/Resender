@@ -142,12 +142,20 @@ def remove_listener(chat_id, user_id):
     delete_from_table('resender.chat_listeners', where_query)
 
 
+def get_chat_listeners(chat_id) -> list:
+    where_query = WhereQueryBuilder() \
+        .add_query('chat_id', chat_id) \
+        .build()
+    return select_from_table('resender.chat_listeners', where_query, ["user_id"])
+
+
 def is_listening(chat_id, user_id):
     where_query = WhereQueryBuilder() \
         .add_query('chat_id', chat_id) \
         .add_query('user_id', user_id) \
         .build()
     return True if len(select_from_table('resender.chat_listeners', where_query)) > 0 else False
+
 
 def is_exist(_uuid=None, vk_id=None, tg_id=None) -> bool:
     return True if len(get_ids(_uuid, vk_id, tg_id)) > 0 else False
@@ -169,6 +177,15 @@ def select_from_table(table_name: str, where_query: str, args_to_select: list = 
     """
     cur.execute(query)
     return cur.fetchall()
+
+
+def is_fully_registered(vk_id=None, tg_id=None) -> bool:
+    where_query = WhereQueryBuilder() \
+        .add_query('vkID', vk_id) \
+        .add_query('tgID', tg_id) \
+        .build()
+    res = select_from_table('resender.connection', where_query)
+    return True if len(res) > 0 and res[0][1] and res[0][2] else False
 
 
 def insert_into_table(table_name: str, query: str):

@@ -4,7 +4,8 @@ from vk_api.bot_longpoll import VkBotMessageEvent
 import re
 import vk_api.keyboard as vk_keyboards
 import dict as vk_dict
-from utils import utils
+from utils import utils, connector
+from utils.message import Message
 from db_module import db_persistence
 
 
@@ -20,6 +21,8 @@ class VkBot:
             self.peer_id = event.message.get('peer_id')
         except AttributeError:
             self.peer_id = event.object.get('peer_id')
+
+        self.from_id = event.message.get('from_id')
 
         try:
             self.conversation_message_id = event.message.get('conversation_message_id')
@@ -39,7 +42,7 @@ class VkBot:
         self.chat_message_handlers = dict([
             (r'/sub', self.sub),
             (r'/unsub', self.unsub),
-            (r'.', self.message)
+            (r'.', self.chat_message)
         ])
 
         self.callback = dict([
@@ -85,18 +88,18 @@ class VkBot:
         self.keyboard = self.registration_keyboard()
 
     def sub(self):
-        if db_persistence.is_listening(self.peer_id, self.event.message.get('from_id')):
-            self.text = f'@id{self.event.message.get("from_id")}\n You are listener of this chat!'
+        if db_persistence.is_listening(self.peer_id, self.from_id):
+            self.text = f'@id{self.from_id}\n You are listener of this chat!'
             return
-        db_persistence.add_listener(self.peer_id, self.event.message.get('from_id'))
-        self.text = f'@id{self.event.message.get("from_id")}\n I add you to listener of this chat!'
+        db_persistence.add_listener(self.peer_id, self.from_id)
+        self.text = f'@id{self.from_id}\n I add you to listener of this chat!'
 
     def unsub(self):
-        if not db_persistence.is_listening(self.peer_id, self.event.message.get('from_id')):
-            self.text = f'@id{self.event.message.get("from_id")}\n You are not listener of this chat!'
+        if not db_persistence.is_listening(self.peer_id, self.from_id):
+            self.text = f'@id{self.from_id}\n You are not listener of this chat!'
             return
-        db_persistence.remove_listener(self.peer_id, self.event.message.get('from_id'))
-        self.text = f'@id{self.event.message.get("from_id")}\n I remove you from listener of this chat!'
+        db_persistence.remove_listener(self.peer_id, self.from_id)
+        self.text = f'@id{self.from_id}\n I remove you from listener of this chat!'
 
     def message(self):
         user_state = db_persistence.get_state(self.peer_id)
@@ -119,6 +122,17 @@ class VkBot:
         else:
             self.text = "Simple message!"
         db_persistence.insert_or_update_user_state(self.peer_id, UserState.INITIAL)
+
+    def chat_message(self):
+        chat_listeners = db_persistence.get_chat_listeners(self.peer_id)
+        if len(chat_listeners) > 0:
+            for chat_listener in chat_listeners:
+                chat_listener_id = int(chat_listener[0])
+                if chat_listener_id != self.from_id:
+                    if db_persistence.is_exist(vk_id=chat_listener_id) and db_persistence.is_fully_registered(
+                            chat_listener_id):
+                        tg_id = db_persistence.get_ids(vk_id=chat_listener_id)[0][2]
+                        connector.from_vk_to_tg(tg_id, Message.from_vk(self.event))
 
     def get_user_name(self):
         pass
