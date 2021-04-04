@@ -25,6 +25,9 @@ def start(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_func(call):
     if call.data == 'new_acc':
+        if db.is_exist(tg_id=call.message.chat.id):
+            bot.send_message(call.message.chat.id, dict.ALREADY_EXIST)
+            return
         _uuid = get_uuid()
         bot.edit_message_text(text=dict.NEW_ACC_MESSAGE.format(id=_uuid), chat_id=call.message.chat.id,
                               message_id=call.message.id)
