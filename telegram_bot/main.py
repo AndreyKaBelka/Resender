@@ -1,14 +1,8 @@
-import os
-from dotenv import load_dotenv
-import telebot
+from telegram_bot import *
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply
 import dict
 from utils.utils import *
 from db_module import db_persistence as db
-
-load_dotenv()
-key = os.getenv('BOT_TELEGRAM_KEY')
-bot = telebot.TeleBot(key)
 
 
 @bot.message_handler(commands=['start'])

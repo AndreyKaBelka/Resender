@@ -22,7 +22,10 @@ class VkBot:
         except AttributeError:
             self.peer_id = event.object.get('peer_id')
 
-        self.from_id = event.message.get('from_id')
+        try:
+            self.from_id = event.message.get('from_id')
+        except AttributeError:
+            self.from_id = None
 
         try:
             self.conversation_message_id = event.message.get('conversation_message_id')
@@ -128,11 +131,11 @@ class VkBot:
         if len(chat_listeners) > 0:
             for chat_listener in chat_listeners:
                 chat_listener_id = int(chat_listener[0])
-                if chat_listener_id != self.from_id:
-                    if db_persistence.is_exist(vk_id=chat_listener_id) and db_persistence.is_fully_registered(
-                            chat_listener_id):
-                        tg_id = db_persistence.get_ids(vk_id=chat_listener_id)[0][2]
-                        connector.from_vk_to_tg(tg_id, Message.from_vk(self.event))
+                # if chat_listener_id != self.from_id:
+                if db_persistence.is_exist(vk_id=chat_listener_id) and db_persistence.is_fully_registered(
+                        chat_listener_id):
+                    tg_id = db_persistence.get_ids(vk_id=chat_listener_id)[0][2]
+                    connector.from_vk_to_tg(tg_id, Message.from_vk(self.event))
 
     def get_user_name(self):
         pass

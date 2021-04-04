@@ -1,24 +1,12 @@
 import asyncio
-import os
 
-from aiovk import TokenSession, API
-from dotenv import load_dotenv
-from aiovk.longpoll import BotsLongPoll
+from vk_bot import *
 from vk_api.bot_longpoll import VkBotEventType, VkBotMessageEvent, VkBotEvent
 from vk_bot.bot import VkBot
-
-load_dotenv()
 
 
 def main():
     loop = asyncio.get_event_loop()
-    ses = TokenSession(access_token=str(os.getenv('BOT_VK_KEY')))
-    api = API(ses)
-    lp = BotsLongPoll(api, int(os.getenv('GROUP_ID')), version=100)
-
-    async def write_msg(vk_bot: VkBot):
-        if vk_bot.text is not None:
-            await api.messages.send(peer_id=int(vk_bot.peer_id), message=vk_bot.text, keyboard=vk_bot.keyboard)
 
     async def edit_last_message(vk_bot: VkBot):
         await api.messages.edit(peer_id=int(vk_bot.peer_id), message=vk_bot.text,
