@@ -142,6 +142,13 @@ def remove_listener(chat_id, user_id):
     delete_from_table('resender.chat_listeners', where_query)
 
 
+def is_listening(chat_id, user_id):
+    where_query = WhereQueryBuilder() \
+        .add_query('chat_id', chat_id) \
+        .add_query('user_id', user_id) \
+        .build()
+    return True if len(select_from_table('resender.chat_listeners', where_query)) > 0 else False
+
 def is_exist(_uuid=None, vk_id=None, tg_id=None) -> bool:
     return True if len(get_ids(_uuid, vk_id, tg_id)) > 0 else False
 

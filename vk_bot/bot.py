@@ -84,10 +84,18 @@ class VkBot:
         self.keyboard = self.registration_keyboard()
 
     def sub(self):
-        pass
+        if db_persistence.is_listening(self.peer_id, self.event.message.get('from_id')):
+            self.text = f'@id{self.event.message.get("from_id")}\n You are listener of this chat!'
+            return
+        db_persistence.add_listener(self.peer_id, self.event.message.get('from_id'))
+        self.text = f'@id{self.event.message.get("from_id")}\n I add you to listener of this chat!'
 
     def unsub(self):
-        pass
+        if not db_persistence.is_listening(self.peer_id, self.event.message.get('from_id')):
+            self.text = f'@id{self.event.message.get("from_id")}\n You are not listener of this chat!'
+            return
+        db_persistence.remove_listener(self.peer_id, self.event.message.get('from_id'))
+        self.text = f'@id{self.event.message.get("from_id")}\n I remove you from listener of this chat!'
 
     def message(self):
         user_state = db_persistence.get_state(self.peer_id)
