@@ -87,6 +87,17 @@ def insert_new_connection(_uuid=None, vk_id=None, tg_id=None):
     insert_into_table('resender.connection', insert_query)
 
 
+def insert_or_update_user_state(user_id, state=0):
+    insert_query = InsertQueryBuilder() \
+        .add_query('user_id', user_id) \
+        .add_query('finite_state', state) \
+        .build()
+    update_query = UpdateQueryBuilder() \
+        .add_query('finite_state', state) \
+        .build()
+    __insert_into_table_on_duplicate_update('resender.vk_finite_state', insert_query, update_query)
+
+
 def get_ids(_uuid=None, vk_id=None, tg_id=None) -> list:
     if _uuid is None and vk_id is None and tg_id is None:
         raise AttributeError("All arguments can't be None!")
@@ -119,6 +130,14 @@ def is_exist(_uuid=None, vk_id=None, tg_id=None) -> bool:
     return True if len(get_ids(_uuid, vk_id, tg_id)) > 0 else False
 
 
+def get_state(user_id) -> int:
+    where_query = WhereQueryBuilder() \
+        .add_query('user_id', user_id) \
+        .build()
+    res = select_from_table('resender.vk_finite_state', where_query)
+    return res[0][1] if len(res) > 0 else None
+
+
 def select_from_table(table_name: str, where_query: str, args_to_select: list = None) -> list:
     query = f"""
     SELECT {str.join(",", args_to_select) if args_to_select is not None else "*"}
@@ -143,4 +162,9 @@ def update_in_table(table_name: str, update_query: str, where_query: str):
     WHERE {where_query}
     """
     cur.execute(query)
+    con.commit()
+
+
+def __insert_into_table_on_duplicate_update(table_name: str, insert_query: str, update_query: str):
+    cur.execute(f"""INSERT INTO {table_name}{insert_query} ON DUPLICATE KEY UPDATE {update_query}""")
     con.commit()

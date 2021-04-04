@@ -1,6 +1,16 @@
+import uuid
+
 from vk_api.bot_longpoll import VkBotMessageEvent
 import re
 import vk_api.keyboard as vk_keyboards
+import dict as vk_dict
+from utils import utils
+from db_module import db_persistence
+
+
+class UserState:
+    INITIAL = 0
+    ID = 1
 
 
 class VkBot:
@@ -17,7 +27,7 @@ class VkBot:
             self.conversation_message_id = event.object.get('conversation_message_id')
 
         try:
-            self.payload = event.object.get('payload')
+            self.payload = event.object.get('payload') or {}
         except AttributeError:
             self.payload = {}
 
@@ -44,6 +54,7 @@ class VkBot:
             for key, func in self.message_handlers.items():
                 if re.match(key, self.event.message.text):
                     func()
+                    return
         elif self.event.from_chat:
             pass
 
@@ -51,17 +62,39 @@ class VkBot:
         self.callback.get(self.payload.get('type'))()
 
     def new_acc(self):
-        self.text = 'NEw Acc!'
+        _uuid = utils.get_uuid()
+        self.text = vk_dict.NEW_ACC_MESSAGE.format(id=_uuid)
+        db_persistence.insert_new_connection(_uuid=_uuid, vk_id=self.peer_id)
 
     def ex_acc(self):
-        self.text = 'Ex acc!'
+        self.text = vk_dict.EX_ACC_MESSAGE
+        db_persistence.insert_or_update_user_state(self.peer_id, UserState.ID)
 
     def start(self):
-        self.text = "From user!"
+        self.text = vk_dict.START_MESSAGE
         self.keyboard = self.registration_keyboard()
 
     def message(self):
-        self.text = "Simple message!"
+        user_state = db_persistence.get_state(self.peer_id)
+        if user_state is not None:
+            if user_state == UserState.ID:
+                try:
+                    __uuid = str(uuid.UUID(self.event.message.get('text')))
+                    if db_persistence.is_exist(_uuid=__uuid):
+                        if not db_persistence.get_ids(_uuid=__uuid)[0][1]:
+                            db_persistence.update_connection({'uuid': __uuid}, {'vkID': self.peer_id})
+                            self.text = "Your account is full registered"
+                        else:
+                            self.text = "This account is already registered!"
+                    else:
+                        self.text = 'Wrong id! Try again...'
+                except ValueError:
+                    self.text = 'Wrong id! Try again...'
+            else:
+                self.text = "Simple message!"
+        else:
+            db_persistence.insert_or_update_user_state(self.peer_id, UserState.INITIAL)
+            self.text = "Simple message!"
 
     def get_user_name(self):
         pass
