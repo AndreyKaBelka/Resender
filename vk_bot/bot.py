@@ -1,12 +1,13 @@
+import re
 import uuid
 
-from vk_api.bot_longpoll import VkBotMessageEvent
-import re
 import vk_api.keyboard as vk_keyboards
+from vk_api.bot_longpoll import VkBotMessageEvent
+
 import dict as vk_dict
+from db_module import db_persistence
 from utils import utils, connector
 from utils.message import Message
-from db_module import db_persistence
 
 
 class UserState:
@@ -54,6 +55,8 @@ class VkBot:
         ])
         self.text = None
         self.keyboard = {}
+        self.from_user = dict()
+        self.chat_title = ''
 
     def registration_keyboard(self):
         keyboard = vk_keyboards.VkKeyboard(inline=True)
@@ -135,7 +138,6 @@ class VkBot:
                 if db_persistence.is_exist(vk_id=chat_listener_id) and db_persistence.is_fully_registered(
                         chat_listener_id):
                     tg_id = db_persistence.get_ids(vk_id=chat_listener_id)[0][2]
+                    self.event.client_info.update({'from_title': f'{self.from_user["first_name"]} {self.from_user["last_name"]}'})
+                    self.event.message.update({'chat_title': self.chat_title})
                     connector.from_vk_to_tg(tg_id, Message.from_vk(self.event))
-
-    def get_user_name(self):
-        pass
