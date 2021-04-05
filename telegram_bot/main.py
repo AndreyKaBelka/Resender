@@ -47,7 +47,6 @@ def get_chat_id(call):
     vk_chat_id = int(call.data)
 
     def nex_handler(message, vk_peer_id):
-        print('here')
         user_name = db.get_username_from_tg(message.chat.id)
         vk_msg = Message.from_tg(message, user_name)
         connector.from_tg_to_vk(vk_peer_id, vk_msg)
@@ -105,6 +104,15 @@ def callback_func(call):
                 bot.send_message(message.chat.id, 'Wrong id! Try again...')
 
         bot.register_next_step_handler(call.message, next_handler_step)
+    elif 'reply_to' in call.data:
+        if db.get_tg_state(call.message.chat.id) == TgUserState.INITIAL:
+            print('ge')
+            vk_peer_id = call.data[9:]
+            call.data = vk_peer_id
+            get_chat_id(call)
+        else:
+            bot.send_message(call.message.chat.id, 'Something went wrong! Try again')
+            db.insert_or_update_tg_state(call.message.chat.id, TgUserState.INITIAL)
 
 
 @bot.message_handler(content_types=['text'])
