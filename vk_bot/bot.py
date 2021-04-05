@@ -138,6 +138,6 @@ class VkBot:
                 if db_persistence.is_exist(vk_id=chat_listener_id) and db_persistence.is_fully_registered(
                         chat_listener_id):
                     tg_id = db_persistence.get_ids(vk_id=chat_listener_id)[0][2]
-                    self.event.client_info.update({'from_title': f'{self.from_user["first_name"]} {self.from_user["last_name"]}'})
+                    self.event.client_info.update({'from_title': f'{self.from_user}'})
                     self.event.message.update({'chat_title': self.chat_title})
                     connector.from_vk_to_tg(tg_id, Message.from_vk(self.event))
