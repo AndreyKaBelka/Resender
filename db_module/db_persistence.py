@@ -88,6 +88,25 @@ def insert_new_connection(_uuid=None, vk_id=None, tg_id=None, user_name=None):
     insert_into_table('resender.connection', insert_query)
 
 
+def insert_or_update_tg_state(tg_id, state=0):
+    insert_query = InsertQueryBuilder() \
+        .add_query('tg_id', tg_id) \
+        .add_query('state', state) \
+        .build()
+    update_query = UpdateQueryBuilder() \
+        .add_query('state', state) \
+        .build()
+    __insert_into_table_on_duplicate_update('resender.tg_finite_state', insert_query, update_query)
+
+
+def get_tg_state(tg_id):
+    where_query = WhereQueryBuilder() \
+        .add_query('tg_id', tg_id) \
+        .build()
+    res = select_from_table('resender.tg_finite_state', where_query)
+    return res[0][1] if len(res) > 0 else None
+
+
 def insert_or_update_user_state(user_id, state=0):
     insert_query = InsertQueryBuilder() \
         .add_query('user_id', user_id) \
@@ -149,6 +168,30 @@ def get_chat_listeners(chat_id) -> list:
         .add_query('chat_id', chat_id) \
         .build()
     return select_from_table('resender.chat_listeners', where_query, ["user_id"])
+
+
+def get_listener_chats_from_tg(tg_id):
+    where_query = WhereQueryBuilder() \
+        .add_query('tgID', tg_id) \
+        .build()
+    res = select_from_table('resender.connection', where_query, ['vkID'])
+    vk_id = res[0][0] if len(res) > 0 else None
+    if vk_id is not None:
+        where_query = WhereQueryBuilder() \
+            .add_query('user_id', vk_id) \
+            .build()
+        chats = select_from_table('resender.chat_listeners', where_query, ['chat_id'])
+        return [chat[0] for chat in chats]
+    else:
+        return None
+
+
+def get_username_from_tg(tg_id):
+    where_query = WhereQueryBuilder() \
+        .add_query('tgID', tg_id) \
+        .build()
+    res = select_from_table('resender.connection', where_query, ['user_name'])
+    return res[0][0] if len(res) > 0 else None
 
 
 def is_listening(chat_id, user_id):

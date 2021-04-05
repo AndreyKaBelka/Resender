@@ -3,7 +3,7 @@ from vk_api.bot_longpoll import VkBotMessageEvent
 
 class Message:
     def __init__(self, from_id, text, from_title=None, chat_title=None):
-        self._from_id = from_id
+        self.from_id = from_id
         self.chat_title = chat_title
         self.from_title = from_title
         self.text = text
@@ -17,11 +17,10 @@ class Message:
         return Message(peer_id, text, from_title, chat_title)
 
     @staticmethod
-    def from_tg(tg_message):
-        peer_id = tg_message.chat.id
-        text = tg_message.chat.message
-        from_title = tg_message.chat.from_title
-        return Message(peer_id, text, from_title)
+    def from_tg(tg_message, user_name):
+        text = tg_message.text
+        from_title = user_name
+        return Message(None, text, from_title)
 
     def __str__(self):
         res = ''

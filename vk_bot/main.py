@@ -1,13 +1,9 @@
-import asyncio
-
 from vk_bot import *
 from vk_api.bot_longpoll import VkBotEventType, VkBotMessageEvent, VkBotEvent
 from vk_bot.bot import VkBot
 
 
 def main():
-    loop = asyncio.get_event_loop()
-
     async def edit_last_message(vk_bot: VkBot):
         await api.messages.edit(peer_id=int(vk_bot.peer_id), message=vk_bot.text,
                                 conversation_message_id=vk_bot.conversation_message_id)

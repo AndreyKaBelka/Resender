@@ -1,6 +1,8 @@
 from telegram_bot import *
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply
+from telebot.types import ForceReply
 import dict
+from utils import connector
+from utils.message import Message
 from utils.utils import *
 from db_module import db_persistence as db
 
@@ -14,6 +16,63 @@ def start(message):
         return markup
 
     bot.send_message(message.chat.id, dict.START_MESSAGE, reply_markup=get_markup())
+    db.insert_or_update_tg_state(message.chat.id)
+
+
+@bot.message_handler(commands=['chat'])
+def chat_choose(message):
+    tg_id = message.chat.id
+    state = db.get_tg_state(tg_id)
+    if state is not None:
+        if state == TgUserState.INITIAL:
+            chats = db.get_listener_chats_from_tg(tg_id)
+            bot.send_message(tg_id, 'Select chat:', reply_markup=get_keyboard_for_chats(chats, 1))
+            db.insert_or_update_tg_state(tg_id, TgUserState.CHAT)
+        else:
+            bot.send_message(message.chat.id, 'Something went wrong! Try again')
+            db.insert_or_update_tg_state(message.chat.id, TgUserState.INITIAL)
+
+
+def is_int(call):
+    try:
+        int(call.data)
+        return True
+    except ValueError:
+        return False
+
+
+@bot.callback_query_handler(func=is_int)
+def get_chat_id(call):
+    tg_id = call.message.chat.id
+    vk_chat_id = int(call.data)
+
+    def nex_handler(message, vk_peer_id):
+        print('here')
+        user_name = db.get_username_from_tg(message.chat.id)
+        vk_msg = Message.from_tg(message, user_name)
+        connector.from_tg_to_vk(vk_peer_id, vk_msg)
+        db.insert_or_update_tg_state(message.chat.id, TgUserState.INITIAL)
+
+    bot.send_message(tg_id, 'Write message for chat!')
+    db.insert_or_update_tg_state(tg_id, TgUserState.MESSAGE)
+    bot.register_next_step_handler(call.message, nex_handler, vk_peer_id=vk_chat_id)
+
+
+@bot.callback_query_handler(func=lambda call: 'bck:' in call.data or 'fwd:' in call.data)
+def paginating(call):
+    page_num = int(call.data[4:])
+    tg_id = call.message.chat.id
+    if 'bck:' in call.data:
+        bot.edit_message_reply_markup(tg_id, call.message.id,
+                                      reply_markup=get_keyboard_for_chats(db.get_listener_chats_from_tg(tg_id),
+                                                                          page_num - 1))
+    elif 'fwd:' in call.data:
+        bot.edit_message_reply_markup(tg_id, call.message.id,
+                                      reply_markup=get_keyboard_for_chats(db.get_listener_chats_from_tg(tg_id),
+                                                                          page_num + 1))
+    else:
+        bot.send_message(call.message.chat.id, 'Something went wrong! Try again')
+        db.insert_or_update_tg_state(call.message.chat.id, TgUserState.INITIAL)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -54,4 +113,4 @@ def reply(message):
 
 
 if __name__ == '__main__':
-    bot.polling(none_stop=True, interval=5)
+    bot.polling(none_stop=True, interval=2)
