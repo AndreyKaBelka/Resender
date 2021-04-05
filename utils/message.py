@@ -3,10 +3,15 @@ from vk_api.bot_longpoll import VkBotMessageEvent
 
 class Message:
     def __init__(self, from_id, text, from_title=None, chat_title=None):
-        self.from_id = from_id
+        self._from_id = from_id
         self.chat_title = chat_title
         self.from_title = from_title
         self.text = text
+        self._translate = {
+            'chat_title': 'Название беседы',
+            'from_title': 'От кого',
+            'text': 'Текст'
+        }
 
     @staticmethod
     def from_vk(vk_event: VkBotMessageEvent):
@@ -26,5 +31,9 @@ class Message:
         res = ''
         for key, val in self.__dict__.items():
             if val is not None and not key.startswith('_'):
-                res += f'{key} : {val}\n'
+                res += f'{self._translate.get(key)} : {val}\n'
         return res
+
+    @property
+    def from_id(self):
+        return self._from_id
