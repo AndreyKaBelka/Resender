@@ -19,23 +19,23 @@ class VkBot:
     def __init__(self, event: VkBotMessageEvent):
         self.event = event
         try:
-            self.peer_id = event.message.get('peer_id')
-        except AttributeError:
-            self.peer_id = event.object.get('peer_id')
+            self.peer_id = event.message['peer_id']
+        except TypeError:
+            self.peer_id = event.obj['peer_id']
 
         try:
-            self.from_id = event.message.get('from_id')
-        except AttributeError:
-            self.from_id = None
+            self.from_id = event.message['from_id']
+        except TypeError:
+            self.from_id = event.obj['user_id']
 
         try:
-            self.conversation_message_id = event.message.get('conversation_message_id')
-        except AttributeError:
-            self.conversation_message_id = event.object.get('conversation_message_id')
+            self.conversation_message_id = event.message['conversation_message_id']
+        except TypeError:
+            self.conversation_message_id = event.object['conversation_message_id']
 
         try:
             self.payload = event.object.get('payload') or {}
-        except AttributeError:
+        except TypeError:
             self.payload = {}
 
         self.message_handlers = dict([
@@ -83,7 +83,7 @@ class VkBot:
     def new_acc(self):
         _uuid = utils.get_uuid()
         self.text = vk_dict.NEW_ACC_MESSAGE.format(id=_uuid)
-        db_persistence.insert_new_connection(_uuid=_uuid, vk_id=self.peer_id)
+        db_persistence.insert_new_connection(_uuid=_uuid, vk_id=self.peer_id, user_name=self.from_user)
 
     def ex_acc(self):
         self.text = vk_dict.EX_ACC_MESSAGE
@@ -115,7 +115,7 @@ class VkBot:
                     __uuid = str(uuid.UUID(self.event.message.get('text')))
                     if db_persistence.is_exist(_uuid=__uuid):
                         if not db_persistence.get_ids(_uuid=__uuid)[0][1]:
-                            db_persistence.update_connection({'uuid': __uuid}, {'vkID': self.peer_id})
+                            db_persistence.update_connection({'uuid': __uuid}, {'vkID': self.peer_id, 'user_name': self.from_user})
                             self.text = "Your account is full registered"
                         else:
                             self.text = "This account is already registered!"

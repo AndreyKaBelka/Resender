@@ -76,13 +76,14 @@ class UpdateQueryBuilder(QueryBuilder):
         return str.join(" , ", self.update_vals).format(*self.args)
 
 
-def insert_new_connection(_uuid=None, vk_id=None, tg_id=None):
+def insert_new_connection(_uuid=None, vk_id=None, tg_id=None, user_name=None):
     if _uuid is None and vk_id is None and tg_id is None:
         raise AttributeError("All arguments can't be None!")
     insert_query = InsertQueryBuilder() \
         .add_query('uuid', _uuid) \
         .add_query('vkID', vk_id) \
         .add_query('tgID', tg_id) \
+        .add_query('user_name', user_name) \
         .build()
     insert_into_table('resender.connection', insert_query)
 
@@ -117,6 +118,7 @@ def update_connection(where_args: dict, update_args: dict):
         .add_query('uuid', update_args.get('uuid')) \
         .add_query('vkID', update_args.get('vkID')) \
         .add_query('tgID', update_args.get('tgID')) \
+        .add_query('user_name', update_args.get('user_name')) \
         .build()
     where_query = WhereQueryBuilder() \
         .add_query('uuid', where_args.get('uuid')) \
