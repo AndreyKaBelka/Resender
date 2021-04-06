@@ -33,6 +33,11 @@ def chat_choose(message):
             db.insert_or_update_tg_state(message.chat.id, TgUserState.INITIAL)
 
 
+@bot.message_handler(commands=['help'])
+def help_command(message):
+    bot.send_message(message.chat_title.id, dict.HELP_MESSAGE)
+
+
 def is_int(call):
     try:
         int(call.data)
@@ -117,7 +122,7 @@ def callback_func(call):
 
 @bot.message_handler(content_types=['text'])
 def reply(message):
-    bot.send_message(message.chat.id, "HI")
+    bot.send_message(message.chat.id, "I don`t understand you. Type /help to see available commands")
 
 
 if __name__ == '__main__':
