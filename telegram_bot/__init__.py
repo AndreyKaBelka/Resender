@@ -8,7 +8,7 @@ bot = telebot.TeleBot(key)
 
 
 def listener(messages):
-    print('Got new message!')
+    print('Got new message from tg!')
 
 
 bot.set_update_listener(listener)
