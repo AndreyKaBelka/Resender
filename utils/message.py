@@ -7,6 +7,7 @@ class Message:
         self.chat_title = chat_title
         self.from_title = from_title
         self.text = text
+        self._tg_id = None
         self._translate = {
             'chat_title': 'Название беседы',
             'from_title': 'От кого',
@@ -38,3 +39,7 @@ class Message:
     @property
     def from_id(self):
         return self._from_id
+
+    @property
+    def tg_id(self):
+        return self._tg_id
