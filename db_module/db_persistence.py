@@ -1,20 +1,8 @@
-import pymysql
-import os
-from dotenv import load_dotenv
 from abc import ABCMeta, abstractmethod
+from db_module.db_init import *
 
-load_dotenv()
-
-
-class DbSettings:
-    HOST_NAME = os.getenv('HOST_NAME')
-    USER_PASS = os.getenv('USER_PASS')
-    USER_NAME = os.getenv('USER_NAME')
-    SQL_NAME = os.getenv('SQL_NAME')
-
-
-con = pymysql.connect(host=DbSettings.HOST_NAME, user=DbSettings.USER_NAME, password=DbSettings.USER_PASS,
-                      database=DbSettings.SQL_NAME)
+main()
+con = sql_connection()
 cur = con.cursor()
 
 
@@ -85,7 +73,7 @@ def insert_new_connection(_uuid=None, vk_id=None, tg_id=None, user_name=None):
         .add_query('tgID', tg_id) \
         .add_query('user_name', user_name) \
         .build()
-    insert_into_table('resender.connection', insert_query)
+    insert_into_table('connection', insert_query)
 
 
 def insert_or_update_tg_state(tg_id, state=0):
@@ -96,14 +84,14 @@ def insert_or_update_tg_state(tg_id, state=0):
     update_query = UpdateQueryBuilder() \
         .add_query('state', state) \
         .build()
-    __insert_into_table_on_duplicate_update('resender.tg_finite_state', insert_query, update_query)
+    __insert_into_table_on_duplicate_update('tg_finite_state', insert_query, update_query, 'tg_id')
 
 
 def get_tg_state(tg_id):
     where_query = WhereQueryBuilder() \
         .add_query('tg_id', tg_id) \
         .build()
-    res = select_from_table('resender.tg_finite_state', where_query)
+    res = select_from_table('tg_finite_state', where_query)
     return res[0][1] if len(res) > 0 else None
 
 
@@ -115,7 +103,7 @@ def insert_or_update_user_state(user_id, state=0):
     update_query = UpdateQueryBuilder() \
         .add_query('finite_state', state) \
         .build()
-    __insert_into_table_on_duplicate_update('resender.vk_finite_state', insert_query, update_query)
+    __insert_into_table_on_duplicate_update('vk_finite_state', insert_query, update_query, 'user_id')
 
 
 def get_ids(_uuid=None, vk_id=None, tg_id=None) -> list:
@@ -126,7 +114,7 @@ def get_ids(_uuid=None, vk_id=None, tg_id=None) -> list:
         .add_query('vkID', vk_id) \
         .add_query('tgID', tg_id) \
         .build()
-    res = select_from_table('resender.connection', where_query)
+    res = select_from_table('connection', where_query)
     return res
 
 
@@ -144,7 +132,7 @@ def update_connection(where_args: dict, update_args: dict):
         .add_query('vkID', where_args.get('vkID')) \
         .add_query('tgID', where_args.get('tgID')) \
         .build()
-    update_in_table('resender.connection', update_query, where_query)
+    update_in_table('connection', update_query, where_query)
 
 
 def add_listener(chat_id, user_id):
@@ -152,7 +140,7 @@ def add_listener(chat_id, user_id):
         .add_query('chat_id', chat_id) \
         .add_query('user_id', user_id) \
         .build()
-    insert_into_table('resender.chat_listeners', insert_query)
+    insert_into_table('chat_listeners', insert_query)
 
 
 def remove_listener(chat_id, user_id):
@@ -160,27 +148,27 @@ def remove_listener(chat_id, user_id):
         .add_query('chat_id', chat_id) \
         .add_query('user_id', user_id) \
         .build()
-    delete_from_table('resender.chat_listeners', where_query)
+    delete_from_table('chat_listeners', where_query)
 
 
 def get_chat_listeners(chat_id) -> list:
     where_query = WhereQueryBuilder() \
         .add_query('chat_id', chat_id) \
         .build()
-    return select_from_table('resender.chat_listeners', where_query, ["user_id"])
+    return select_from_table('chat_listeners', where_query, ["user_id"])
 
 
 def get_listener_chats_from_tg(tg_id):
     where_query = WhereQueryBuilder() \
         .add_query('tgID', tg_id) \
         .build()
-    res = select_from_table('resender.connection', where_query, ['vkID'])
+    res = select_from_table('connection', where_query, ['vkID'])
     vk_id = res[0][0] if len(res) > 0 else None
     if vk_id is not None:
         where_query = WhereQueryBuilder() \
             .add_query('user_id', vk_id) \
             .build()
-        chats = select_from_table('resender.chat_listeners', where_query, ['chat_id'])
+        chats = select_from_table('chat_listeners', where_query, ['chat_id'])
         return [chat[0] for chat in chats]
     else:
         return None
@@ -190,7 +178,7 @@ def get_username_from_tg(tg_id):
     where_query = WhereQueryBuilder() \
         .add_query('tgID', tg_id) \
         .build()
-    res = select_from_table('resender.connection', where_query, ['user_name'])
+    res = select_from_table('connection', where_query, ['user_name'])
     return res[0][0] if len(res) > 0 else None
 
 
@@ -199,7 +187,7 @@ def is_listening(chat_id, user_id):
         .add_query('chat_id', chat_id) \
         .add_query('user_id', user_id) \
         .build()
-    return True if len(select_from_table('resender.chat_listeners', where_query)) > 0 else False
+    return True if len(select_from_table('chat_listeners', where_query)) > 0 else False
 
 
 def is_exist(_uuid=None, vk_id=None, tg_id=None) -> bool:
@@ -210,7 +198,7 @@ def get_state(user_id) -> int:
     where_query = WhereQueryBuilder() \
         .add_query('user_id', user_id) \
         .build()
-    res = select_from_table('resender.vk_finite_state', where_query)
+    res = select_from_table('vk_finite_state', where_query)
     return res[0][1] if len(res) > 0 else None
 
 
@@ -229,7 +217,7 @@ def is_fully_registered(vk_id=None, tg_id=None) -> bool:
         .add_query('vkID', vk_id) \
         .add_query('tgID', tg_id) \
         .build()
-    res = select_from_table('resender.connection', where_query)
+    res = select_from_table('connection', where_query)
     return True if len(res) > 0 and res[0][1] and res[0][2] else False
 
 
@@ -259,6 +247,6 @@ def delete_from_table(table_name: str, where_query: str):
     con.commit()
 
 
-def __insert_into_table_on_duplicate_update(table_name: str, insert_query: str, update_query: str):
-    cur.execute(f"""INSERT INTO {table_name}{insert_query} ON DUPLICATE KEY UPDATE {update_query}""")
+def __insert_into_table_on_duplicate_update(table_name: str, insert_query: str, update_query: str, on_conflict=None):
+    cur.execute(f"""INSERT INTO {table_name}{insert_query} ON CONFLICT({on_conflict}) DO UPDATE SET {update_query}""")
     con.commit()
