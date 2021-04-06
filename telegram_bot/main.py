@@ -1,6 +1,6 @@
 from telegram_bot import *
 from telebot.types import ForceReply
-import dict
+from telegram_bot import dict
 from utils import connector
 from utils.message import Message
 from utils.utils import *
@@ -106,7 +106,6 @@ def callback_func(call):
         bot.register_next_step_handler(call.message, next_handler_step)
     elif 'reply_to' in call.data:
         if db.get_tg_state(call.message.chat.id) == TgUserState.INITIAL:
-            print('ge')
             vk_peer_id = call.data[9:]
             call.data = vk_peer_id
             get_chat_id(call)
@@ -120,5 +119,9 @@ def reply(message):
     bot.send_message(message.chat.id, "HI")
 
 
+def main():
+    return bot.polling(none_stop=True, interval=2)
+
+
 if __name__ == '__main__':
-    bot.polling(none_stop=True, interval=2)
+    main()

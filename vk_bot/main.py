@@ -31,7 +31,6 @@ def main():
             elif event.type == VkBotEventType.MESSAGE_EVENT:
                 event = VkBotMessageEvent(event.raw)
                 vk_bot = VkBot(event)
-                print(vk_bot.peer_id)
                 vk_bot.from_user = await get_user_title(vk_bot)
                 vk_bot.new_callback_answer()
                 await edit_last_message(vk_bot)

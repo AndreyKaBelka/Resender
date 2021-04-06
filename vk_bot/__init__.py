@@ -17,8 +17,6 @@ loop = asyncio.get_event_loop()
 
 
 async def write_msg(vk_bot: VkBot = None, message: Message = None, peer_id=None):
-    if message is not None:
-        print('with')
     if vk_bot and vk_bot.text is not None:
         await api.messages.send(peer_id=int(vk_bot.peer_id), message=vk_bot.text, keyboard=vk_bot.keyboard)
     elif message:

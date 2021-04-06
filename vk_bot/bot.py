@@ -4,7 +4,7 @@ import uuid
 import vk_api.keyboard as vk_keyboards
 from vk_api.bot_longpoll import VkBotMessageEvent
 
-import dict as vk_dict
+from  vk_bot import dict as vk_dict
 from db_module import db_persistence
 from utils import utils, connector
 from utils.message import Message
