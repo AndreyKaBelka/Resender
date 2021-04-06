@@ -34,4 +34,7 @@ if __name__ == '__main__':
     vk_thread = ServerProcess(func=vk_main.main)
 
     tg_thread.start()
+    print('*****************\nTelegram bot has been started...\n*****************')
+    print('*****************\nVk bot is starting..\n*****************')
     vk_thread.start()
+    print('*****************\nVk bot has been started...\n*****************')
