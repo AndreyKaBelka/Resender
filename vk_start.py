@@ -2,8 +2,7 @@ from server import *
 
 
 def main():
-    vk_thread = ServerProcess(func=vk_main.main)
-    vk_thread.start()
+    vk_main.main()
     print('Vk bot has been started...')
 
 

@@ -1,12 +1,12 @@
 from server import *
 
 
+@try_wrapper
 def main():
-    db_init.main()
-    tg_thread = ServerProcess(func=tg_main.main)
-    tg_thread.start()
+    tg_main.main()
     print('Telegram bot has been started...')
 
 
 if __name__ == '__main__':
+    db_init.main()
     main()
