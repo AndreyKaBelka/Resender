@@ -94,13 +94,19 @@ class VkBot:
         self.keyboard = self.registration_keyboard()
 
     def sub(self):
+        if not db_persistence.is_exist(vk_id=self.from_id):
+            self.text = f'@id{self.from_id}\n You are not registered!'
+            return
         if db_persistence.is_listening(self.peer_id, self.from_id):
-            self.text = f'@id{self.from_id}\n You are listener of this chat!'
+            self.text = f'@id{self.from_id}\n You are already listener of this chat!'
             return
         db_persistence.add_listener(self.peer_id, self.from_id)
         self.text = f'@id{self.from_id}\n I add you to listener of this chat!'
 
     def unsub(self):
+        if not db_persistence.is_exist(vk_id=self.from_id):
+            self.text = f'@id{self.from_id}\n You are not registered!'
+            return
         if not db_persistence.is_listening(self.peer_id, self.from_id):
             self.text = f'@id{self.from_id}\n You are not listener of this chat!'
             return
