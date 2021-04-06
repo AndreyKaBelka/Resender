@@ -1,2 +1,2 @@
-bot: python vk_start.py
-worker: python tg_start.py $PORT
+web: python vk_start.py
+bot: python tg_start.py
