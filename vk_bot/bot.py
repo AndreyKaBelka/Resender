@@ -82,6 +82,9 @@ class VkBot:
 
     def new_acc(self):
         _uuid = utils.get_uuid()
+        if db_persistence.is_exist(vk_id=self.peer_id):
+            self.text = vk_dict.ALREADY_EXIST.format(id=_uuid)
+            return
         self.text = vk_dict.NEW_ACC_MESSAGE.format(id=_uuid)
         db_persistence.insert_new_connection(_uuid=_uuid, vk_id=self.peer_id, user_name=self.from_user)
 

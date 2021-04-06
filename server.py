@@ -19,9 +19,10 @@ def try_wrapper(func):
 
 class ServerProcess(Process):
 
-    def __init__(self, func: Callable):
+    def __init__(self, func: Callable, args=()):
         super().__init__()
         self.func = func
+        self.args = args
 
     @try_wrapper
     def run(self) -> None:
@@ -38,4 +39,3 @@ if __name__ == '__main__':
     print('Vk bot has been started...')
     tg_thread.start()
     print('Telegram bot has been started...')
-

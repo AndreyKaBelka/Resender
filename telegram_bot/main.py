@@ -125,7 +125,7 @@ def reply(message):
 
 
 def main():
-    return bot.polling(none_stop=True, interval=2)
+    return bot.infinity_polling()
 
 
 if __name__ == '__main__':

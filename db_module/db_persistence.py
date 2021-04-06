@@ -1,11 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from db_module.db_init import *
 
-main()
-con = sql_connection()
-cur = con.cursor()
-
-
 class QueryBuilder:
     __metaclass__ = ABCMeta
 
@@ -203,13 +198,15 @@ def get_state(user_id) -> int:
 
 
 def select_from_table(table_name: str, where_query: str, args_to_select: list = None) -> list:
-    query = f"""
-    SELECT {str.join(",", args_to_select) if args_to_select is not None else "*"}
-    FROM {table_name}
-    WHERE {where_query}
-    """
-    cur.execute(query)
-    return cur.fetchall()
+    with sql_connection() as con:
+        cur = con.cursor()
+        query = f"""
+        SELECT {str.join(",", args_to_select) if args_to_select is not None else "*"}
+        FROM {table_name}
+        WHERE {where_query}
+        """
+        cur.execute(query)
+        return cur.fetchall()
 
 
 def is_fully_registered(vk_id=None, tg_id=None) -> bool:
@@ -222,31 +219,39 @@ def is_fully_registered(vk_id=None, tg_id=None) -> bool:
 
 
 def insert_into_table(table_name: str, query: str):
-    cur.execute(f"""INSERT INTO {table_name}{query}""")
-    con.commit()
+    with sql_connection() as con:
+        cur = con.cursor()
+        cur.execute(f"""INSERT INTO {table_name}{query}""")
+        con.commit()
 
 
 def update_in_table(table_name: str, update_query: str, where_query: str):
-    if where_query is None:
-        raise AttributeError('where_query shouldn`t be None!')
-    query = f"""
-    UPDATE {table_name}
-    SET {update_query}
-    WHERE {where_query}
-    """
-    cur.execute(query)
-    con.commit()
+    with sql_connection() as con:
+        cur = con.cursor()
+        if where_query is None:
+            raise AttributeError('where_query shouldn`t be None!')
+        query = f"""
+        UPDATE {table_name}
+        SET {update_query}
+        WHERE {where_query}
+        """
+        cur.execute(query)
+        con.commit()
 
 
 def delete_from_table(table_name: str, where_query: str):
-    query = f"""
-    DELETE FROM {table_name}
-    WHERE {where_query}
-    """
-    cur.execute(query)
-    con.commit()
+    with sql_connection() as con:
+        cur = con.cursor()
+        query = f"""
+        DELETE FROM {table_name}
+        WHERE {where_query}
+        """
+        cur.execute(query)
+        con.commit()
 
 
 def __insert_into_table_on_duplicate_update(table_name: str, insert_query: str, update_query: str, on_conflict=None):
-    cur.execute(f"""INSERT INTO {table_name}{insert_query} ON CONFLICT({on_conflict}) DO UPDATE SET {update_query}""")
-    con.commit()
+    with sql_connection() as con:
+        cur = con.cursor()
+        cur.execute(f"""INSERT INTO {table_name}{insert_query} ON CONFLICT({on_conflict}) DO UPDATE SET {update_query}""")
+        con.commit()
