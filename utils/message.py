@@ -7,6 +7,11 @@ class Message:
         self.chat_title = chat_title
         self.from_title = from_title
         self.text = text
+        self._translate = {
+            'chat_title': 'Название беседы',
+            'from_title': 'От кого',
+            'text': 'Текст'
+        }
 
     @staticmethod
     def from_vk(vk_event: VkBotMessageEvent):
@@ -17,15 +22,18 @@ class Message:
         return Message(peer_id, text, from_title, chat_title)
 
     @staticmethod
-    def from_tg(tg_message):
-        peer_id = tg_message.chat.id
-        text = tg_message.chat.message
-        from_title = tg_message.chat.from_title
-        return Message(peer_id, text, from_title)
+    def from_tg(tg_message, user_name):
+        text = tg_message.text
+        from_title = user_name
+        return Message(None, text, from_title)
 
     def __str__(self):
         res = ''
         for key, val in self.__dict__.items():
             if val is not None and not key.startswith('_'):
-                res += f'{key} : {val}\n'
+                res += f'{self._translate.get(key)} : {val}\n'
         return res
+
+    @property
+    def from_id(self):
+        return self._from_id
