@@ -35,7 +35,7 @@ def chat_choose(message):
 
 @bot.message_handler(commands=['help'])
 def help_command(message):
-    bot.send_message(message.chat_title.id, dict.HELP_MESSAGE)
+    bot.send_message(message.chat.id, dict.HELP_MESSAGE)
 
 
 def is_int(call):
