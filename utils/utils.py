@@ -1,5 +1,6 @@
 import uuid
 from typing import List
+import vk_bot
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -36,5 +37,6 @@ def get_paginating_keyboard_button(chats: list, page_num: int, max_size: int) ->
     bottom_level = max_size * (page_num - 1)
     top_level = max_size * page_num if max_size * page_num < len(chats) else len(chats)
     for i in range(bottom_level, top_level):
-        res.append(InlineKeyboardButton(str(chats[i]), callback_data=chats[i]))
+        chat_title = vk_bot.loop.run_until_complete(vk_bot.get_chat_title(peer_id=chats[i]))
+        res.append(InlineKeyboardButton(chat_title, callback_data=chats[i]))
     return res
