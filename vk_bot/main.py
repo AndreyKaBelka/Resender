@@ -7,6 +7,7 @@ from vk_bot.dict import HELP_MESSAGE
 def main():
     async def main_loop():
         async for event in lp.iter():
+            print(f'Got new event: {event}')
             event = VkBotEvent(event)
             if event.type == VkBotEventType.MESSAGE_NEW:
                 event = VkBotMessageEvent(event.raw)
