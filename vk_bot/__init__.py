@@ -34,3 +34,8 @@ async def get_chat_title(vk_bot: VkBot = None, peer_id=None):
     for conv in convs['items']:
         if conv['peer']['type'] == 'chat' and conv['peer']['id'] == peer_id:
             return conv['chat_settings']['title']
+
+
+async def edit_last_message(vk_bot: VkBot):
+    await api.messages.edit(peer_id=int(vk_bot.peer_id), message=vk_bot.text,
+                            conversation_message_id=vk_bot.conversation_message_id)

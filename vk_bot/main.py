@@ -5,10 +5,6 @@ from vk_bot.dict import HELP_MESSAGE
 
 
 def main():
-    async def edit_last_message(vk_bot: VkBot):
-        await api.messages.edit(peer_id=int(vk_bot.peer_id), message=vk_bot.text,
-                                conversation_message_id=vk_bot.conversation_message_id)
-
     async def main_loop():
         async for event in lp.iter():
             event = VkBotEvent(event)
