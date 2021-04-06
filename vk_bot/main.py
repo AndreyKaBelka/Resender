@@ -8,16 +8,6 @@ def main():
         await api.messages.edit(peer_id=int(vk_bot.peer_id), message=vk_bot.text,
                                 conversation_message_id=vk_bot.conversation_message_id)
 
-    async def get_user_title(vk_bot: VkBot):
-        res = (await api.users.get(user_ids=int(vk_bot.from_id)))[0]
-        return f"{res['first_name']} {res['last_name']}"
-
-    async def get_chat_title(vk_bot: VkBot):
-        convs = await api.messages.getConversationsById(peer_ids=vk_bot.peer_id)
-        for conv in convs['items']:
-            if conv['peer']['type'] == 'chat' and conv['peer']['id'] == vk_bot.peer_id:
-                return conv['chat_settings']['title']
-
     async def main_loop():
         async for event in lp.iter():
             event = VkBotEvent(event)

@@ -25,7 +25,8 @@ class Message:
     def from_tg(tg_message, user_name):
         text = tg_message.text
         from_title = user_name
-        return Message(None, text, from_title)
+        from_id = tg_message.chat.id
+        return Message(from_id, text, from_title)
 
     def __str__(self):
         res = ''

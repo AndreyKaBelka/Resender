@@ -4,7 +4,7 @@ import uuid
 import vk_api.keyboard as vk_keyboards
 from vk_api.bot_longpoll import VkBotMessageEvent
 
-from  vk_bot import dict as vk_dict
+from vk_bot import dict as vk_dict
 from db_module import db_persistence
 from utils import utils, connector
 from utils.message import Message
@@ -115,7 +115,8 @@ class VkBot:
                     __uuid = str(uuid.UUID(self.event.message.get('text')))
                     if db_persistence.is_exist(_uuid=__uuid):
                         if not db_persistence.get_ids(_uuid=__uuid)[0][1]:
-                            db_persistence.update_connection({'uuid': __uuid}, {'vkID': self.peer_id, 'user_name': self.from_user})
+                            db_persistence.update_connection({'uuid': __uuid},
+                                                             {'vkID': self.peer_id, 'user_name': self.from_user})
                             self.text = "Your account is full registered"
                         else:
                             self.text = "This account is already registered!"
@@ -134,10 +135,10 @@ class VkBot:
         if len(chat_listeners) > 0:
             for chat_listener in chat_listeners:
                 chat_listener_id = int(chat_listener[0])
-                # if chat_listener_id != self.from_id:
-                if db_persistence.is_exist(vk_id=chat_listener_id) and db_persistence.is_fully_registered(
-                        chat_listener_id):
-                    tg_id = db_persistence.get_ids(vk_id=chat_listener_id)[0][2]
-                    self.event.client_info.update({'from_title': f'{self.from_user}'})
-                    self.event.message.update({'chat_title': self.chat_title})
-                    connector.from_vk_to_tg(tg_id, Message.from_vk(self.event))
+                if chat_listener_id != self.from_id:
+                    if db_persistence.is_exist(vk_id=chat_listener_id) and db_persistence.is_fully_registered(
+                            chat_listener_id):
+                        tg_id = db_persistence.get_ids(vk_id=chat_listener_id)[0][2]
+                        self.event.client_info.update({'from_title': f'{self.from_user}'})
+                        self.event.message.update({'chat_title': self.chat_title})
+                        connector.from_vk_to_tg(tg_id, Message.from_vk(self.event))
